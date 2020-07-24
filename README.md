@@ -1,4 +1,4 @@
-# Yourls-email-notify
+# Yourls-Email-Notify
 Have Yourls send you an email when someone clicks a shortened link.
 
 Copy everything to your YOURLS_DIRECTORY
