@@ -1,7 +1,7 @@
 # Yourls-email-notify
 Have Yourls send you an email when someone clicks a shortened link.
 
-Copy everything to your YOURLS_INSTALL directory
+Copy everything to your YOURLS_DIRECTORY
 
 Caveats
 
