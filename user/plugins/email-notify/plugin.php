@@ -3,10 +3,10 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Receive an email when someone clicks on the short URL that was sent to them.
-Version: 1.4.5
+Version: 1.4.6
 Original: 2016-12-15
-Date: 2020-07-24
-Author: s22_Tech
+Date: 2020-20-23
+Author: s22_tech
 
 NOTES:
 $code is the Short URL name used when you create the link.
@@ -52,13 +52,15 @@ function s22_email_notification( $args ) {
    if ($keywords) {
       $code = $keywords[0];  // This is the keyword from the shorturl.
    }
+print_to_log( 'path: '.$path );
+print_to_log( 'code: '.$code );
 
    $test_message = '';
    if (strpos(yourls_get_keyword_longurl($code), 'test') !== false) {
       $test_message = 'This was a test.  My click was counted in the db.';
    }
 
-   if ($code !== 'xxx') {
+//    if ($code !== 'xxx') {
       print_to_log( 'keywords_array: '.implode(',', $keywords) );
       print_to_log( 'code: '.$code );
    //    yourls_debug_log('code: ' . $code);  // How is this supposed to work?
@@ -186,7 +188,7 @@ function s22_email_notification( $args ) {
       print_to_log( ' ' );  // Print a blank line.
 
       mail( EMAIL_TO, $email_subject, $email_body, $email_header );
-   }
+//    }
 }
 
 /////////////////
@@ -198,17 +200,17 @@ function FilterCChars ($the_string) {
 }
 
 // Register our plugin admin page.
-yourls_add_action( 'plugins_loaded', 'ssc_email_admin_page' );
+yourls_add_action( 'plugins_loaded', 's22_email_admin_page' );
 
-function ssc_email_admin_page() {
-   yourls_register_plugin_page( 'email_notify', 'Click Notification Email Address', 'ssc_email_admin_do_page' );
+function s22_email_admin_page () {
+   yourls_register_plugin_page( 'email_notify', 'Click Notification Email Address', 's22_email_admin_do_page' );
    // Parameters: page slug, page title, and function that will display the page itself.
 }
 
 // Display admin page.
-function ssc_email_admin_do_page() {
+function s22_email_admin_do_page () {
    // Check if a form was submitted.
-   if ( isset( $_POST['admin_email'] ) ) ssc_update_email_notify_address();
+   if (isset($_POST['admin_email'])) s22_update_email_notify_address();
 
    $admin_email = ADMIN_EMAIL;
 
@@ -223,7 +225,7 @@ HTML;
 }
 
 // Update option in database.
-function ssc_update_email_notify_address() {
+function s22_update_email_notify_address () {
    $email = $_POST['admin_email'];
 
    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
