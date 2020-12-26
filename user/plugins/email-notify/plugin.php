@@ -233,11 +233,12 @@ function s22_email_admin_do_page () {
 
    echo <<<"HTML"
    <h2>Click Notification E-mail Address</h2>
-   <p>Enter the email address where you&quot;d like to receive 'click notifications' when someone clicks the short URL that you sent them.</p>
+   <p>Enter the email address for sending the &quot;click notifications&quot; when someone clicks a short URL.</p>
    <form method="post">
-      <p><label for="admin_email">Your Address:</label> <input type="text" size="50" id="admin_email" name="admin_email" value="$admin_email" /></p>
+      <p><label for="admin_email">From Address:</label> <input type="text" size="50" id="admin_email" name="admin_email" value="$admin_email" /></p>
       <p><input type="submit" value="Add / Change" /></p>
    </form>
+   Visit the <a href="https://github.com/s22-tech/Yourls-Email-Notify">s22_tech Github page</a>.
 HTML;
 }
 
