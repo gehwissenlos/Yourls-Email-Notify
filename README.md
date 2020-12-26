@@ -7,6 +7,7 @@ There are a few optional settings in the script that you can customize to fit yo
 * $path - this is the base path where you want to install the following files.
 * $my_ip_file - this file contains your IP address.  It's used to compare to the visitors IP so you can see which clicks were made by you.
 * $error_log - name and path of an error log, in case you have a problem with this script.
+* date_default_timezone_set - this may not be necessary, but I added it to make sure the times in the email were from my timezone.
 
 Plus you can customize the generated email to your heart's content!
 
