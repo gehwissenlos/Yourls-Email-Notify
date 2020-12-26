@@ -13,9 +13,10 @@ $code is the Short URL name used when you create the link.
 */
 
 ////////////////////////////////////////////
-// If you want to keep a log, customize
-// these settings to your particular setup.
+// USER CUSTOMIZABLE SETTINGS
 ////////////////////////////////////////////
+
+// If you want to keep a log, change these settings to your particular setup.
 $user_name  = get_current_user();
 $path       = '/home/'.$user_name.'/projects';
 $my_ip_file = $path .'/data/files_to_watch/my_ip.txt';
@@ -24,8 +25,10 @@ $log_errors = 'no';
 
 define('EMAIL_SUBJECT', 'Yourls Click Notification');
 
-// Enforce UTC timezone to suppress PHP warnings -- correct date/time will be managed using the config time offset.
+// Correct date/time will be managed using the config time offset.
 date_default_timezone_set('America/Los_Angeles');
+
+////////////////////////////////////////////
 
 // No direct call.
 if (!defined('YOURLS_ABSPATH')) die();
