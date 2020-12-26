@@ -20,7 +20,7 @@ $user_name  = get_current_user();
 $path       = '/home/'.$user_name.'/projects';
 $my_ip_file = $path .'/data/files_to_watch/my_ip.txt';
 $error_log  = $path.'/logs/yourls_errors.txt';
-$log_errors = 'yes';
+$log_errors = 'no';
 
 define('EMAIL_SUBJECT', 'Yourls Click Notification');
 
