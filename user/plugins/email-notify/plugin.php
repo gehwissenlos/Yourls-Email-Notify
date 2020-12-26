@@ -3,9 +3,9 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.4.7
+Version: 1.4.8
 Original: 2016-12-15
-Date: 2020-20-23
+Date: 2020-20-26
 Author: s22_tech
 
 NOTES:
@@ -28,7 +28,7 @@ date_default_timezone_set('America/Los_Angeles');
 // No direct call.
 if (!defined('YOURLS_ABSPATH')) die();
 
-// Get value from database.
+// Get values from database.
 define('ADMIN_EMAIL', yourls_get_option('admin_email') );
 define('EMAIL_TO',    yourls_get_option('email_to') );
 
@@ -220,7 +220,7 @@ function FilterCChars ($the_string) {
 yourls_add_action( 'plugins_loaded', 's22_email_admin_page' );
 
 function s22_email_admin_page () {
-   yourls_register_plugin_page( 'email_notify', 'Click Notification Email Address', 's22_email_admin_do_page' );
+   yourls_register_plugin_page( 'email_notify', 'Click Notification Email Addresses', 's22_email_admin_do_page' );
    // Parameters: page slug, page title, and function that will display the page itself.
 }
 
@@ -230,15 +230,17 @@ function s22_email_admin_do_page () {
    if (isset($_POST['admin_email'])) s22_update_email_notify_address();
 
    $admin_email = ADMIN_EMAIL;
+   $email_to    = EMAIL_TO;
 
    echo <<<"HTML"
-   <h2>Click Notification E-mail Address</h2>
-   <p>Enter the email address for sending the &quot;click notifications&quot; when someone clicks a short URL.</p>
+   <h2>Click Notification E-mail Addresses</h2>
+   <p>Enter the email addresses for sending and receiving the &quot;click notifications&quot; when someone clicks a short URL.</p>
    <form method="post">
       <p><label for="admin_email">From Address:</label> <input type="text" size="50" id="admin_email" name="admin_email" value="$admin_email" /></p>
+      <p><label for="email_to">To Address:</label> <input type="text" size="50" id="email_to" name="email_to" value="$email_to" /></p>
       <p><input type="submit" value="Add / Change" /></p>
    </form>
-   Visit the <a href="https://github.com/s22-tech/Yourls-Email-Notify">s22_tech Github page</a>.
+   From <a href="https://github.com/s22-tech/Yourls-Email-Notify">s22_tech</a>
 HTML;
 }
 
