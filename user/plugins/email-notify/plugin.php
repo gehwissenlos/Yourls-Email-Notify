@@ -3,7 +3,7 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.4.8
+Version: 1.4.9
 Original: 2016-12-15
 Date: 2020-20-26
 Author: s22_tech
@@ -21,6 +21,8 @@ $path       = '/home/'.$user_name.'/projects';
 $my_ip_file = $path .'/data/files_to_watch/my_ip.txt';
 $error_log  = $path.'/logs/yourls_errors.txt';
 $log_errors = 'yes';
+
+define('EMAIL_SUBJECT', 'Yourls Click Notification');
 
 // Enforce UTC timezone to suppress PHP warnings -- correct date/time will be managed using the config time offset.
 date_default_timezone_set('America/Los_Angeles');
@@ -161,6 +163,7 @@ function s22_email_notification($args) {
    $date_created = $date_created[0];
 
    $email_from    = ADMIN_EMAIL;
+   $email_subject = EMAIL_SUBJECT;
    if (preg_match('/^aff/', $code)) {
       $email_subject = FilterCChars("Re: Affiliate Link clicked for Customer # $code");
    }
@@ -186,6 +189,7 @@ function s22_email_notification($args) {
 
    . 'YOURLS_REFERER =     '.@$_SERVER['HTTP_REFERER'].'<br>'.PHP_EOL
    . 'YOURLS_REMOTE_ADDR = '.@$_SERVER['REMOTE_ADDR'].'<br>'.PHP_EOL
+   . '<br>'.PHP_EOL
    ;
 
    if ( preg_match('/^[0-9]{2}[a-m]{1}[0-9]{2}[a-z]{2}[0-9]{2}$/i', $code) ) {
@@ -205,7 +209,7 @@ function s22_email_notification($args) {
 
    print_to_log( ' ' );  // Print a blank line.
 
-   mail( EMAIL_TO, $email_subject, $email_body, $email_header );
+   mail(EMAIL_TO, $email_subject, $email_body, $email_header);
 }
 
 /////////////////
