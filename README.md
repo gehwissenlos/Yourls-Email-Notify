@@ -1,7 +1,7 @@
 # Yourls-Email-Notify
 Have Yourls send you an email when someone clicks a shortened link.
 
-This plugin is very easy to configure.  Simply add your email address to the admin panel and you're good to go!
+This plugin is very easy to configure.  Simply add your To & From email addresses to the "Click Notification Email Addresses" admin panel and you're good to go!
 
 ### Installation Instructions
 
