@@ -3,14 +3,15 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.4.9
+Version: 1.5.0
 Original: 2016-12-15
-Date: 2020-20-26
+Date: 2020-20-27
 Author: s22_tech
 
 NOTES:
 $code is the Short URL name used when you create the link.
 */
+
 
 ////////////////////////////////////////////
 // USER CUSTOMIZABLE SETTINGS
@@ -26,9 +27,10 @@ $log_errors = 'no';
 define('EMAIL_SUBJECT', 'Yourls Click Notification');
 
 // Correct date/time will be managed using the config time offset.
-date_default_timezone_set('America/Los_Angeles');
+date_default_timezone_set('US/Pacific');
 
 ////////////////////////////////////////////
+
 
 // No direct call.
 if (!defined('YOURLS_ABSPATH')) die();
@@ -57,16 +59,16 @@ function s22_email_notification($args) {
    if ($keywords) {
       $code = $keywords[0];  // This is the keyword from the shorturl.
    }
-   print_to_log( 'path: '.$path );
-   print_to_log( 'code: '.$code );
+   print_to_log('path: '.$path);
+   print_to_log('code: '.$code);
 
    $test_message = '';
    if (strpos(yourls_get_keyword_longurl($code), 'test') !== false) {
       $test_message = 'This was a test.  My click was counted in the db.';
    }
 
-   print_to_log( 'code: '.$code );
-   print_to_log( 'keywords_array: '.implode(',', $keywords) );
+   print_to_log('code: '.$code);
+   print_to_log('keywords_array: '.implode(',', $keywords));
 
    list($is_bot, $hostname) = s22_bot_check();
    // No keyword from the shorturl was found.
@@ -74,7 +76,7 @@ function s22_email_notification($args) {
 
    $hostname = '';
 
-//    yourls_debug_log('code: ' . $code);  // How is this supposed to work?
+   yourls_debug_log('code: ' . $code);
 
    if ($url_parts = parse_url($long_url, PHP_URL_QUERY)) {
       $query_parts = explode('&', $url_parts['query']);
@@ -191,7 +193,7 @@ function s22_email_notification($args) {
    . 'and was created on '. $date_created .'.<br><br>'.PHP_EOL
 
    . 'YOURLS_REFERER =     '.@$_SERVER['HTTP_REFERER'].'<br>'.PHP_EOL
-   . 'YOURLS_REMOTE_ADDR = '.@$_SERVER['REMOTE_ADDR'].'<br>'.PHP_EOL
+   . 'YOURLS_REMOTE_ADDR = '.@$_SERVER['REMOTE_ADDR'] .'<br>'.PHP_EOL
    . '<br>'.PHP_EOL
    ;
 
@@ -233,35 +235,37 @@ function s22_email_admin_page () {
 
 // Display admin page.
 function s22_email_admin_do_page () {
-   // Check if a form was submitted.
-   if (isset($_POST['admin_email'])) s22_update_email_notify_address();
-
    $admin_email = ADMIN_EMAIL;
    $email_to    = EMAIL_TO;
 
+   // Check if a form was submitted.
+   if (isset($_POST['submit'])) {
+      s22_update_email_notify_addresses('admin_email', $_POST['admin_email']);
+      s22_update_email_notify_addresses('email_to',    $_POST['email_to']);
+      yourls_redirect_javascript(yourls_site_url() . $_SERVER['REQUEST_URI']);
+   }
+
    echo <<<"HTML"
    <h2>Click Notification E-mail Addresses</h2>
-   <p>Enter the email addresses for sending and receiving the &quot;click notifications&quot; when someone clicks a short URL.</p>
+   <p>Enter the email addresses for sending and receiving the &quot;click notifications&quot; when someone clicks on a short URL.</p>
    <form method="post">
       <p><label for="admin_email">From Address:</label> <input type="text" size="50" id="admin_email" name="admin_email" value="$admin_email" /></p>
       <p><label for="email_to">To Address:</label> <input type="text" size="50" id="email_to" name="email_to" value="$email_to" /></p>
-      <p><input type="submit" value="Add / Change" /></p>
+      <p><input type="submit" name="submit" value="Add / Change" /></p>
    </form>
-   From <a href="https://github.com/s22-tech/Yourls-Email-Notify">s22_tech</a>
+   From the <a href="https://github.com/s22-tech/Yourls-Email-Notify" target="blank">s22_tech</a> GitHub page.
 HTML;
 }
 
 // Update option in database.
-function s22_update_email_notify_address () {
-   $email = $_POST['admin_email'];
-
+function s22_update_email_notify_addresses ($type, $email) {
    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
       // Validate test_option. ALWAYS validate and sanitize user input.
       echo 'Email is not valid';
    }
    else {
       // Update value in database.
-      yourls_update_option( 'admin_email', $email );
+      yourls_update_option($type, $email);
    }
 }
 
