@@ -72,7 +72,7 @@ function s22_email_notification($args) {
 
    list($is_bot, $hostname) = s22_bot_check();
    // No keyword from the shorturl was found.
-   if ($code === 'xxx' || $is_bot === 'yes') exit;
+//   if ($code === 'xxx' || $is_bot === 'yes') exit;
 
    $hostname = '';
 
