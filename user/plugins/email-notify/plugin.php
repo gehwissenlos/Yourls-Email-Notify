@@ -146,9 +146,9 @@ function s22_email_notification($args) {
 		}
 
 		$statement_1 = $mysqli->query("SELECT `clicks`,`title`,`timestamp`
-												 FROM `". YOURLS_DB_TABLE_URL ."`
-												 WHERE `keyword` = '$code'"
-											  );
+		                               FROM `". YOURLS_DB_TABLE_URL ."`
+		                               WHERE `keyword` = '$code'"
+		                              );
 
 		while ($result1 = $statement_1 && $statement_1->fetch_object()) {
 			$clicks     = $result1->clicks;
@@ -160,11 +160,11 @@ function s22_email_notification($args) {
 
 			if ($clicks > 0) {
 				$statement_2 = $mysqli->query("SELECT `click_time`,`ip_address`
-														 FROM `". YOURLS_DB_TABLE_LOG ."`
-														 WHERE `shorturl` = '$code'
-														 ORDER BY `click_id` DESC
-														 LIMIT 1"
-														);
+				                               FROM `". YOURLS_DB_TABLE_LOG ."`
+				                               WHERE `shorturl` = '$code'
+				                               ORDER BY `click_id` DESC
+				                               LIMIT 1"
+				                              );
 
 				while ($result2 = $statement_2->fetch_object()) {
 					$click_time = $result2->click_time;
