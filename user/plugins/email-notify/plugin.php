@@ -14,7 +14,7 @@ $code is the Short URL name used when you create the link.
 
 
 ////////////////////////////////////////////
-// USER CUSTOMIZABLE SETTINGS
+// USER CUSTOMIZABLE SETTINGS  /////////////
 ////////////////////////////////////////////
 
 // If you want to keep a log, change these settings to your particular setup.
@@ -50,20 +50,18 @@ yourls_add_action('pre_redirect', 's22_email_notification');
 
 
 function s22_email_notification($args) {
-   $code = 'xxx';
+	s22_print_to_log("\n");  // Print a blank line.
    $long_url = isset( $args[0] ) ? $args[0] : null;
    // $args[0] is the URL that I'm passing.  Example:
    // http://www.domain.com/store.cgi?c=info.htm&itemid=21246CP7&i_21246CP7=3&name=Joe_Blow&code=9260A
 
    $keywords = yourls_get_longurl_keywords($long_url);
-   if ($keywords) {
-      $code = $keywords[0];  // This is the keyword from the shorturl.
-   }
+   $code = $keywords[0] ?? 'xxx';  // This is the keyword from the shorturl.
    s22_print_to_log('my_ip_file: '. MY_IP_FILE);
 
    $test_message = '';
    if (strpos(yourls_get_keyword_longurl($code), 'test') !== false) {
-      $test_message = 'This was a test.  My click was counted in the db.';
+      $test_message = 'This was a test.';
    }
 
    s22_print_to_log('args    : '.implode(',', $args));
@@ -107,7 +105,8 @@ function s22_email_notification($args) {
 	//    if ($remote_ip_c === $server_ip_c) return;
 
 		$qs_count = 0;
-		if (!empty($query_parts)) {
+		if ($query_parts) {
+			s22_print_to_log('query_parts : '.implode(',', $query_parts));
 			$elements = '<table cellpadding="0" cellspacinging="0">';
 			foreach ($query_parts as $element) {
 				$qs_count++;
@@ -147,12 +146,12 @@ function s22_email_notification($args) {
 		}
 
 		$statement_1 = $mysqli->query("SELECT `clicks`,`title`,`timestamp`
-												 FROM `yourls_url`
-												 WHERE `keyword`='$code'"
+												 FROM `". YOURLS_DB_TABLE_URL ."`
+												 WHERE `keyword` = '$code'"
 											  );
 
-		while ($result1 = $statement_1->fetch_object()) {
-			$clicks     = $result1->clicks ?? 0;
+		while ($result1 = $statement_1 && $statement_1->fetch_object()) {
+			$clicks     = $result1->clicks;
 			$title      = $result1->title;
 			$timestamp  = $result1->timestamp;
 
@@ -161,8 +160,8 @@ function s22_email_notification($args) {
 
 			if ($clicks > 0) {
 				$statement_2 = $mysqli->query("SELECT `click_time`,`ip_address`
-														 FROM `yourls_log`
-														 WHERE `shorturl`='$code'
+														 FROM `". YOURLS_DB_TABLE_LOG ."`
+														 WHERE `shorturl` = '$code'
 														 ORDER BY `click_id` DESC
 														 LIMIT 1"
 														);
