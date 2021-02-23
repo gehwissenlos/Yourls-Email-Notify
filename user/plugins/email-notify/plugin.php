@@ -113,7 +113,7 @@ function s22_email_notification($args) {
 				$tab = '&nbsp; &nbsp;';
 				$key_value_pairs = explode('=', $element);
 				$key   = urldecode($key_value_pairs[0]);
-				$value = urldecode($key_value_pairs[1]);
+				$value = isset($key_value_pairs[1]) ? urldecode($key_value_pairs[1]) : '';
 				$elements .= '<tr> <td>'. $tab .'</td> <td>'. $key. '</td> <td>&nbsp;=&nbsp;</td> <td>'. $value .'</td> </tr>'. PHP_EOL;
 				if ($remote_ip_c !== $my_ip_c) {
 					if ($key == 'name') {
