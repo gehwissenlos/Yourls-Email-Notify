@@ -5,6 +5,7 @@ This plugin is very easy to configure.  Simply add the following info to the "Cl
 * To Email Address - this is where you want to receive these notification emails.
 * From Email Address - this is the address you want the emails to be sent from.
 * My IP File (optional) - this file contains your IP address.  It's used to compare to the visitors IP so you can see which clicks were made by you.
+* Bots File (optional) - this file contains a return delimited list of bot names that you don't want triggering the email.
 * Error Log (optional) - path of an error log for testing, in case you have a problem with this script.
 * Log Errors? - choose "Yes" or "No" depending on whether you want to log errors or not.  Choosing "Yes" requires a log path in the Error Log field.
 
