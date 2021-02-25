@@ -4,11 +4,11 @@ Have Yourls send you an email when someone clicks a shortened link.
 This plugin is very easy to configure.  Simply add the following info to the "Click Notification Email" admin page:
 * To Email Address - this is where you want to receive these notification emails.
 * From Email Address - this is the address you want the emails to be sent from.
-* My IP File - this file contains your IP address.  It's used to compare to the visitors IP so you can see which clicks were made by you - optional.
-* Error Log - path of an error log for testing, in case you have a problem with this script - optional.
-* Log Errors? - choose "Yes" or "No" depending whether or not you want to log errors.  Choosing "Yes" requires a log path in the Error Log field.
+* My IP File (optional) - this file contains your IP address.  It's used to compare to the visitors IP so you can see which clicks were made by you.
+* Error Log (optional) - path of an error log for testing, in case you have a problem with this script.
+* Log Errors? - choose "Yes" or "No" depending whether you want to log errors.  Choosing "Yes" requires a log path in the Error Log field.
 
-Plus you can customize the generated email to your heart's content!
+Plus, if you don't mind digging into the code, you can customize the generated email to your heart's content!
 
 ### Installation Instructions
 
