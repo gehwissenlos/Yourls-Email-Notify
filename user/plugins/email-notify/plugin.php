@@ -3,7 +3,7 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.5.6
+Version: 1.5.7
 Original: 2016-12-15
 Date: 2021-02-25
 Author: s22_tech
@@ -27,12 +27,12 @@ define('S22_SERVER_IP', $_SERVER['SERVER_ADDR']);
 date_default_timezone_set('US/Pacific');
 
 // Get these values from the `yourls_options` table.
-define('S22_ADMIN_EMAIL', yourls_get_option('admin_email') );
-define('S22_EMAIL_TO',    yourls_get_option('email_to') );
-define('S22_MY_IP_FILE',  yourls_get_option('my_ip_file') );
-define('S22_BOTS_FILE',   yourls_get_option('bots_file') );
-define('S22_ERROR_LOG',   yourls_get_option('error_log') );
-define('S22_LOG_ERRORS',  yourls_get_option('log_errors') );
+define('S22_EMAIL_FROM', yourls_get_option('email_from') );
+define('S22_EMAIL_TO',   yourls_get_option('email_to') );
+define('S22_MY_IP_FILE', yourls_get_option('my_ip_file') );
+define('S22_BOTS_FILE',  yourls_get_option('bots_file') );
+define('S22_ERROR_LOG',  yourls_get_option('error_log') );
+define('S22_LOG_ERRORS', yourls_get_option('log_errors') );
 
 // How to pass arguments
 // https://github.com/YOURLS/YOURLS/issues/1349
@@ -194,7 +194,7 @@ function s22_email_notification($args) {
 				$date_created = $date_created[0];
 
 			// Create the email.
-				$email_from    = S22_ADMIN_EMAIL;
+				$email_from = S22_EMAIL_FROM;
 				if (preg_match('/^aff/', $code)) {
 					$email_subject = FilterCChars("Re: Yourls - Affiliate Link clicked for Customer # $code");
 				}
@@ -288,22 +288,22 @@ function s22_email_admin_page () {
 
 // Display admin page.
 function s22_email_admin_do_page () {
-   $admin_email = S22_ADMIN_EMAIL;
-   $email_to    = S22_EMAIL_TO;
-   $my_ip_file  = S22_MY_IP_FILE;
-   $bots_file   = S22_BOTS_FILE;
-   $error_log   = S22_ERROR_LOG;
-   $log_errors  = S22_LOG_ERRORS;
+   $email_from = S22_EMAIL_FROM;
+   $email_to   = S22_EMAIL_TO;
+   $my_ip_file = S22_MY_IP_FILE;
+   $bots_file  = S22_BOTS_FILE;
+   $error_log  = S22_ERROR_LOG;
+   $log_errors = S22_LOG_ERRORS;
 
    // Check if a form was submitted.
    if (isset($_POST['submit'])) {
-      s22_update_email_notify_addresses('admin_email', $_POST['admin_email']);
-      s22_update_email_notify_addresses('email_to',    $_POST['email_to']);
-      s22_update_email_notify_addresses('my_ip_file',  $_POST['my_ip_file']);
-      s22_update_email_notify_addresses('bots_file',   $_POST['bots_file']);
-      s22_update_email_notify_addresses('error_log',   $_POST['error_log']);
-      s22_update_email_notify_addresses('log_errors',  $_POST['log_errors']);
-      yourls_redirect_javascript(yourls_site_url() . $_SERVER['REQUEST_URI']);
+      s22_update_email_notify_addresses('email_from', $_POST['email_from']);
+      s22_update_email_notify_addresses('email_to',   $_POST['email_to']);
+      s22_update_email_notify_addresses('my_ip_file', $_POST['my_ip_file']);
+      s22_update_email_notify_addresses('bots_file',  $_POST['bots_file']);
+      s22_update_email_notify_addresses('error_log',  $_POST['error_log']);
+      s22_update_email_notify_addresses('log_errors', $_POST['log_errors']);
+      yourls_redirect_javascript(yourls_site_url() .  $_SERVER['REQUEST_URI']);
    }
 
 	$selected_yes = ($log_errors === 'yes') ? ' selected="selected"' : '';
@@ -325,11 +325,11 @@ function s22_email_admin_do_page () {
    <p>Enter the email addresses for sending and receiving the &quot;click notifications&quot; when someone clicks on a short URL.</p>
    <form method="post">
    <div class="container">
-      <p><label for="admin_email">From Address:</label> <input type="text" size="50" id="admin_email" name="admin_email" value="$admin_email" /></p>
-      <p><label for="email_to">To Address:</label> <input type="text" size="50" id="email_to" name="email_to" value="$email_to" /></p>
-      <p><label for="my_ip_file">My IP File (full path):</label> <input type="text" size="50" id="my_ip_file" name="my_ip_file" value="$my_ip_file" /></p>
-      <p><label for="bots_file">Bots File (full path):</label> <input type="text" size="50" id="bots_file" name="bots_file" value="$bots_file" /></p>
-      <p><label for="error_log">Error Log (full path):</label> <input type="text" size="50" id="error_log" name="error_log" value="$error_log" /></p>
+      <p><label for="email_to">To Email Address:</label> <input type="text" size="50" id="email_to" name="email_to" value="$email_to" /></p>
+      <p><label for="email_from">From Email Address:</label> <input type="text" size="50" id="email_from" name="email_from" value="$email_from" /></p>
+      <p><label for="my_ip_file">My IP File (full path - optional):</label> <input type="text" size="50" id="my_ip_file" name="my_ip_file" value="$my_ip_file" /></p>
+      <p><label for="bots_file">Bots File (full path - optional):</label> <input type="text" size="50" id="bots_file" name="bots_file" value="$bots_file" /></p>
+      <p><label for="error_log">Error Log (full path - optional):</label> <input type="text" size="50" id="error_log" name="error_log" value="$error_log" /></p>
 
       <p><label for="log_errors">Log Errors?</label> <select name="log_errors" id="log_errors">
   			<option value="yes"$selected_yes>Yes</option>
