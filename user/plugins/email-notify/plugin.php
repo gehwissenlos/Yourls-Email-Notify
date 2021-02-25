@@ -3,7 +3,7 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.5.5
+Version: 1.5.6
 Original: 2016-12-15
 Date: 2021-02-25
 Author: s22_tech
@@ -14,31 +14,25 @@ $code is the Short URL name used when you create the link.
 
 
 ////////////////////////////////////////////
-// USER CUSTOMIZABLE SETTINGS  /////////////
+// There are NO user configureable options in this file.
+// Set them on the "Click Notification Email" admin page (located under "Manage Plugins").
 ////////////////////////////////////////////
-
-// If you want to keep a log, change these settings to your particular setup.
-$user_name  = get_current_user();
-define('S22_SERVER_IP', '');  // Your server's IP address.
-define('S22_PATH', '/home/'.$user_name.'/projects');
-define('S22_MY_IP_FILE', S22_PATH .'/data/files_to_watch/my_ip.txt');
-define('S22_ERROR_LOG', S22_PATH.'/logs/yourls_errors.txt');
-define('S22_LOG_ERRORS', 'no');
-
-define('S22_EMAIL_SUBJECT', 'Yourls Click Notification');
-
-// The correct date/time will be managed using the config time offset.
-date_default_timezone_set('US/Pacific');
-
-////////////////////////////////////////////
-
 
 // No direct call.
 if (!defined('YOURLS_ABSPATH')) die();
 
-// Get values from database.
+define('S22_SERVER_IP', $_SERVER['SERVER_ADDR']);
+
+// The correct date/time will be managed using the config time offset.  No longer needed with Yourls 1.8.
+date_default_timezone_set('US/Pacific');
+
+// Get these values from the `yourls_options` table.
 define('S22_ADMIN_EMAIL', yourls_get_option('admin_email') );
 define('S22_EMAIL_TO',    yourls_get_option('email_to') );
+define('S22_MY_IP_FILE',  yourls_get_option('my_ip_file') );
+define('S22_BOTS_FILE',   yourls_get_option('bots_file') );
+define('S22_ERROR_LOG',   yourls_get_option('error_log') );
+define('S22_LOG_ERRORS',  yourls_get_option('log_errors') );
 
 // How to pass arguments
 // https://github.com/YOURLS/YOURLS/issues/1349
@@ -64,6 +58,7 @@ function s22_email_notification($args) {
       $test_message = 'This was a test.';
    }
 
+   s22_print_to_log('S22_SERVER_IP: ' . S22_SERVER_IP);
    s22_print_to_log('args    : '.implode(',', $args));
    s22_print_to_log('long_url: '.$long_url);
    s22_print_to_log('keywords: '.implode(',', $keywords));
@@ -200,7 +195,6 @@ function s22_email_notification($args) {
 
 			// Create the email.
 				$email_from    = S22_ADMIN_EMAIL;
-				$email_subject = S22_EMAIL_SUBJECT;
 				if (preg_match('/^aff/', $code)) {
 					$email_subject = FilterCChars("Re: Yourls - Affiliate Link clicked for Customer # $code");
 				}
@@ -288,7 +282,7 @@ function FilterCChars ($the_string) {
 yourls_add_action( 'plugins_loaded', 's22_email_admin_page' );
 
 function s22_email_admin_page () {
-   yourls_register_plugin_page( 'email_notify', 'Click Notification Email Addresses', 's22_email_admin_do_page' );
+   yourls_register_plugin_page( 'email_notify', 'Click Notification Email', 's22_email_admin_do_page' );
    // Parameters: page slug, page title, and function that will display the page itself.
 }
 
@@ -296,20 +290,52 @@ function s22_email_admin_page () {
 function s22_email_admin_do_page () {
    $admin_email = S22_ADMIN_EMAIL;
    $email_to    = S22_EMAIL_TO;
+   $my_ip_file  = S22_MY_IP_FILE;
+   $bots_file   = S22_BOTS_FILE;
+   $error_log   = S22_ERROR_LOG;
+   $log_errors  = S22_LOG_ERRORS;
 
    // Check if a form was submitted.
    if (isset($_POST['submit'])) {
       s22_update_email_notify_addresses('admin_email', $_POST['admin_email']);
       s22_update_email_notify_addresses('email_to',    $_POST['email_to']);
-      yourls_redirect_javascript(yourls_site_url() .   $_SERVER['REQUEST_URI']);
+      s22_update_email_notify_addresses('my_ip_file',  $_POST['my_ip_file']);
+      s22_update_email_notify_addresses('bots_file',   $_POST['bots_file']);
+      s22_update_email_notify_addresses('error_log',   $_POST['error_log']);
+      s22_update_email_notify_addresses('log_errors',  $_POST['log_errors']);
+      yourls_redirect_javascript(yourls_site_url() . $_SERVER['REQUEST_URI']);
    }
 
+	$selected_yes = ($log_errors === 'yes') ? ' selected="selected"' : '';
+	$selected_no  = ($log_errors === 'no')  ? ' selected="selected"' : '';
    echo <<<"HTML"
+   <style>
+   .container {
+	  width: 400px;
+	  clear: both;
+	}
+
+	.container input {
+	  width: 100%;
+	  clear: both;
+	}
+	form label {font-weight:bold}
+	</style>
    <h2>Click Notification E-mail Addresses</h2>
    <p>Enter the email addresses for sending and receiving the &quot;click notifications&quot; when someone clicks on a short URL.</p>
    <form method="post">
+   <div class="container">
       <p><label for="admin_email">From Address:</label> <input type="text" size="50" id="admin_email" name="admin_email" value="$admin_email" /></p>
       <p><label for="email_to">To Address:</label> <input type="text" size="50" id="email_to" name="email_to" value="$email_to" /></p>
+      <p><label for="my_ip_file">My IP File (full path):</label> <input type="text" size="50" id="my_ip_file" name="my_ip_file" value="$my_ip_file" /></p>
+      <p><label for="bots_file">Bots File (full path):</label> <input type="text" size="50" id="bots_file" name="bots_file" value="$bots_file" /></p>
+      <p><label for="error_log">Error Log (full path):</label> <input type="text" size="50" id="error_log" name="error_log" value="$error_log" /></p>
+
+      <p><label for="log_errors">Log Errors?</label> <select name="log_errors" id="log_errors">
+  			<option value="yes"$selected_yes>Yes</option>
+  			<option value="no"$selected_no>No</option>
+		</select>
+   	</div>
       <p><input type="submit" name="submit" value="Add / Change" /></p>
    </form>
    From the <a href="https://github.com/s22-tech/Yourls-Email-Notify" target="blank">s22_tech</a> GitHub page.
@@ -318,7 +344,7 @@ HTML;
 
 // Update option in database.
 function s22_update_email_notify_addresses ($type, $email) {
-   if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+   if (s22_str_contains($email, '@') && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
       // Validate test_option. ALWAYS validate and sanitize user input.
       echo 'Email is not valid';
    }
@@ -329,7 +355,7 @@ function s22_update_email_notify_addresses ($type, $email) {
 }
 
 function s22_print_to_log ($string_to_log) {
-   if (S22_LOG_ERRORS === 'yes') {
+   if (S22_LOG_ERRORS === 'yes' && S22_ERROR_LOG) {
       error_log( date('Y-m-d h:i:s', time()) .' -- '. $string_to_log ."\n", 3, S22_ERROR_LOG );
    }
 }
@@ -337,7 +363,7 @@ function s22_print_to_log ($string_to_log) {
 function s22_bot_check () {
    $hostname = gethostbyaddr($_SERVER['REMOTE_ADDR']) ?: '';
    $is_bot = 'no';
-   $bots_file = PATH . '/data/bots.txt';
+   $bots_file = S22_BOTS_FILE;
    if (file_exists($bots_file)) {
       $rows = file( $bots_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 
@@ -349,6 +375,16 @@ function s22_bot_check () {
       }
    }
    return array($is_bot, $hostname);
+}
+
+function s22_str_contains ($string, $word, $case='') {
+	if ($case === 'i') {
+		// Case insensitive.
+		if (stripos($string, $word) !== false) return true;
+	}
+	else {
+		if (strpos($string, $word) !== false) return true;
+	}
 }
 
 __halt_compiler();
