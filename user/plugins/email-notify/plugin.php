@@ -3,9 +3,9 @@
 Plugin Name: Email Notifier
 Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
 Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.5.4
+Version: 1.5.5
 Original: 2016-12-15
-Date: 2021-02-22
+Date: 2021-02-25
 Author: s22_tech
 
 NOTES:
@@ -19,13 +19,13 @@ $code is the Short URL name used when you create the link.
 
 // If you want to keep a log, change these settings to your particular setup.
 $user_name  = get_current_user();
-define('SERVER_IP', '');  // Your server's IP address.
-define('PATH', '/home/'.$user_name.'/projects');
-define('MY_IP_FILE', PATH .'/data/files_to_watch/my_ip.txt');
-define('ERROR_LOG', PATH.'/logs/yourls_errors.txt');
-define('LOG_ERRORS', 'no');
+define('S22_SERVER_IP', '');  // Your server's IP address.
+define('S22_PATH', '/home/'.$user_name.'/projects');
+define('S22_MY_IP_FILE', S22_PATH .'/data/files_to_watch/my_ip.txt');
+define('S22_ERROR_LOG', S22_PATH.'/logs/yourls_errors.txt');
+define('S22_LOG_ERRORS', 'no');
 
-define('EMAIL_SUBJECT', 'Yourls Click Notification');
+define('S22_EMAIL_SUBJECT', 'Yourls Click Notification');
 
 // The correct date/time will be managed using the config time offset.
 date_default_timezone_set('US/Pacific');
@@ -37,8 +37,8 @@ date_default_timezone_set('US/Pacific');
 if (!defined('YOURLS_ABSPATH')) die();
 
 // Get values from database.
-define('ADMIN_EMAIL', yourls_get_option('admin_email') );
-define('EMAIL_TO',    yourls_get_option('email_to') );
+define('S22_ADMIN_EMAIL', yourls_get_option('admin_email') );
+define('S22_EMAIL_TO',    yourls_get_option('email_to') );
 
 // How to pass arguments
 // https://github.com/YOURLS/YOURLS/issues/1349
@@ -50,14 +50,14 @@ yourls_add_action('pre_redirect', 's22_email_notification');
 
 
 function s22_email_notification($args) {
-	s22_print_to_log("\n");  // Print a blank line.
+	s22_print_to_log(PHP_EOL);  // Start each section in the log with a blank line.
    $long_url = isset( $args[0] ) ? $args[0] : null;
    // $args[0] is the URL that I'm passing.  Example:
    // http://www.domain.com/store.cgi?c=info.htm&itemid=21246CP7&i_21246CP7=3&name=Joe_Blow&code=9260A
 
-   $keywords = yourls_get_longurl_keywords($long_url);
-   $code = $keywords[0] ?? 'xxx';  // This is the keyword from the shorturl.
-   s22_print_to_log('my_ip_file: '. MY_IP_FILE);
+   $keywords = yourls_get_longurl_keywords($long_url);  // Produces a list of keywords (shorturls) that point to this long url.
+   $code = $keywords[0] ?? 'mmm';  // This is the keyword from the shorturl.
+   s22_print_to_log('my_ip_file: '. S22_MY_IP_FILE);
 
    $test_message = '';
    if (strpos(yourls_get_keyword_longurl($code), 'test') !== false) {
@@ -66,15 +66,15 @@ function s22_email_notification($args) {
 
    s22_print_to_log('args    : '.implode(',', $args));
    s22_print_to_log('long_url: '.$long_url);
-   s22_print_to_log('code    : '.$code);
    s22_print_to_log('keywords: '.implode(',', $keywords));
+   s22_print_to_log('code    : '.$code);
 
    $hostname = $first_name = $last_name = '';
-	$name = 'Someone';
+	$name = 'Someone';  // default
 
    list($is_bot, $hostname) = s22_bot_check();
 
-   if ($code !== 'xxx' || $is_bot !== 'yes') {  // xxx = no keyword from the shorturl was found.
+   if ($code !== 'mmm' || $is_bot !== 'yes') {  // mmm = no keyword from the shorturl was found.
 
 		$query_parts =  '';
 		if ($url_parts = parse_url($long_url)) {
@@ -84,12 +84,12 @@ function s22_email_notification($args) {
 		}
 
 		clearstatcache();  // To clear file_exists from cache.
-		if (file_exists(MY_IP_FILE)) {
-			$my_ip   = trim(file_get_contents(MY_IP_FILE));
-			$my_ip_c = ip2long($my_ip);
+		if (file_exists(S22_MY_IP_FILE)) {
+			$my_ip       = trim(file_get_contents(S22_MY_IP_FILE));
+			$my_ip_c     = ip2long($my_ip);
 			$remote_ip   = trim($_SERVER['REMOTE_ADDR']);
 			$remote_ip_c = ip2long($remote_ip);
-			$server_ip_c = ip2long(SERVER_IP);
+			$server_ip_c = ip2long(S22_SERVER_IP);
 			// file_get_contents() reads entire file into a string.  MUST use the full path for the file.
 			// ip2long allows the comparison of 2 IP addresses.
 			if ($remote_ip_c === $my_ip_c) {
@@ -99,7 +99,7 @@ function s22_email_notification($args) {
 		}
 		else {
 			$my_ip = 'x.x.x.x';
-			$name  = 'The file "'. MY_IP_FILE .'" could not be found.';
+			$name  = 'The file "'. S22_MY_IP_FILE .'" could not be found.';
 		}
 		s22_print_to_log('my_ip: '.$my_ip);
 	//    if ($remote_ip_c === $server_ip_c) return;
@@ -134,128 +134,144 @@ function s22_email_notification($args) {
 
 	//    $long_url = preg_replace('/(.*)&name=.*$/', '$1', $long_url);  // Remove customer name from longurl.
 
-		$host     = YOURLS_DB_HOST;  // These CONSTANTS are from 'user/config.php'
-		$database = YOURLS_DB_NAME;
-		$username = YOURLS_DB_USER;
-		$password = YOURLS_DB_PASS;
+		$host      = YOURLS_DB_HOST;  // These CONSTANTS are from '/user/config.php'
+		$database  = YOURLS_DB_NAME;
+		$username  = YOURLS_DB_USER;
+		$password  = YOURLS_DB_PASS;
+		$table_url = YOURLS_DB_TABLE_URL;  // These CONSTANTS are from '/includes/Config/Config.php'
+		$table_log = YOURLS_DB_TABLE_LOG;
 
 		$mysqli = new mysqli($host, $username, $password, $database, 3306);
 		if ($mysqli->connect_errno) {
 			$error = 'Failed to connect to MySQL: ('. $mysqli->connect_errno . ') '. $mysqli->connect_error;
-			error_log($error, 1, ADMIN_EMAIL);
+			s22_print_to_log('error   : '.$error);
 		}
 
-		$statement_1 = $mysqli->query("SELECT `clicks`,`title`,`timestamp`
-		                               FROM `". YOURLS_DB_TABLE_URL ."`
-		                               WHERE `keyword` = '$code'"
-		                              );
+		$statement_1 = $mysqli->query("SELECT * FROM `$table_url`
+												 WHERE `keyword` = '$code'"
+											  );
 
-		while ($result1 = $statement_1 && $statement_1->fetch_object()) {
-			$clicks     = $result1->clicks;
-			$title      = $result1->title;
-			$timestamp  = $result1->timestamp;
+		if ($statement_1) {
+			while ($result1 = $statement_1->fetch_object()) {
+				$clicks     = $result1->clicks    ?? -9999;
+				$title      = $result1->title     ?? 'NONE';
+				$timestamp  = $result1->timestamp ?? '1111-22-33 11:22:33';
+				$shorturl   = $result1->url;
+				s22_print_to_log('shorturl:  ' . $shorturl);
+				s22_print_to_log('clicks:    ' . $clicks);
+				s22_print_to_log('title:     ' . $title);
+				s22_print_to_log('timestamp: ' . $timestamp);
 
-			$statement_1->close();
-			$click_text = ($clicks == 1) ? 'time': 'times';  // Used in the email.
+				$statement_1->close();
+				$click_text = ngettext('time', 'times', $clicks);
 
-			if ($clicks > 0) {
-				$statement_2 = $mysqli->query("SELECT `click_time`,`ip_address`
-				                               FROM `". YOURLS_DB_TABLE_LOG ."`
-				                               WHERE `shorturl` = '$code'
-				                               ORDER BY `click_id` DESC
-				                               LIMIT 1"
-				                              );
+				if ($clicks > 0) {
+					$statement_2 = $mysqli->query("SELECT * FROM `$table_log`
+															 WHERE `shorturl` = '$code'
+															 ORDER BY `click_id` DESC
+															 LIMIT 1"
+															);
 
-				while ($result2 = $statement_2->fetch_object()) {
-					$click_time = $result2->click_time;
-					$ip_address = $result2->ip_address;
+					if ($statement_2) {
+						while ($result2 = $statement_2->fetch_object()) {
+							$click_time = $result2->click_time;
+							$ip_address = $result2->ip_address;
+							$referer    = $result2->referrer;
+							$keyword    = $result2->shorturl;
+						}
+					}
+					$mysqli->close();
 				}
-				$statement_2->close();
-				$mysqli->close();
+				else {
+					// Since I'm blocking my clicks from the db, these fields need to be manually populated for my visits.
+					$click_time = date('Y-m-d h:i:s', time());
+					$ip_address = $my_ip;
+				}
+				$ip_address = trim($ip_address);
+
+				list($click_date, $click_time) = explode(' ', $click_time);
+			//    $time_in_12_hour_format = date('g:i A', (strtotime($click_time) + YOURLS_HOURS_OFFSET * 3600) );
+
+				$date_now = date('Y-m-d');  // These are needed because not every click is saved to the db.  Why?
+				$time_now = date('g:i a');  // 12 hour time format.
+
+				$date_created = explode(' ', $timestamp);
+				$date_created = $date_created[0];
+
+			// Create the email.
+				$email_from    = S22_ADMIN_EMAIL;
+				$email_subject = S22_EMAIL_SUBJECT;
+				if (preg_match('/^aff/', $code)) {
+					$email_subject = FilterCChars("Re: Yourls - Affiliate Link clicked for Customer # $code");
+				}
+				else {
+					$email_subject = FilterCChars("Re: Yourls - Short Link clicked for Quote # $code");
+				}
+
+
+				// As of PHP 7.2, $headers can be an associative array.
+				$headers['MIME-Version'] = '1.0';
+				$headers['Content-type'] = 'text/html;charset=UTF-8';
+				$headers['From'] = $email_from;
+
+				if ($referer === 'direct') {
+					$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'xxxx';
+				}
+
+				$email_body = <<<"HTML"
+				<html>
+				<head>
+				<title> $email_subject </title>
+				</head>
+				<body>
+				<h2> Yourls Email Notify </h2>
+				$name viewed the "$title" link on $date_now @ $time_now.
+				<br>
+				<br>
+				IP Address: <a href="https://whatismyipaddress.com/ip/$remote_ip">$remote_ip</a>
+				<br>
+				Hostname: $hostname
+				<br>
+				<br>
+				This short URL has been clicked $clicks $click_text
+				<br>
+				and was created on $date_created.
+				<br>
+				<br>
+				keyword = $keyword
+				<br>
+				shorturl = $shorturl
+				<br>
+				YOURLS_REFERER =  $referer
+				<br>
+				YOURLS_LOG_IP = $ip_address
+				<br>
+				<br>
+				HTML;
+				$email_body .= PHP_EOL;
+
+				if ( preg_match('/^[0-9]{2}[a-m]{1}[0-9]{2}[a-z][0-9]{2}[a-z]$/i', $code) ) {
+					// Test for quote numbers.  See Note 1.
+					$email_body .= 'Open quote in FileMaker Pro: <br>'. PHP_EOL;
+					$email_body .= 'fmp://$/Quotes.fmp12?script=Go_To_Quote_from_YOURLS_Link&$_quote='.$code.'<br><br>'. PHP_EOL;
+				}
+
+				if ($qs_count > 0) {
+					$email_body .= 'Query items passed:<br>'. PHP_EOL;
+					$email_body .= '<pre>'. PHP_EOL . $elements.'</pre>'. PHP_EOL;
+					$email_body .= '(query items have been <b>urldecode</b>\'d.)<br><br><br>'. PHP_EOL;
+				}
+
+				$email_body .= 'The corresponding long URL is:<br>'.$long_url.'<br><br>'. PHP_EOL
+				. $test_message. PHP_EOL
+				. 'Last recorded click_time was '.$click_time. PHP_EOL
+				. '</body>'. PHP_EOL
+				. '</html>';
+
+				s22_print_to_log( ' ' );  // Print a blank line.
+
+				mail(S22_EMAIL_TO, $email_subject, $email_body, $headers);
 			}
-			else {
-				// Since I'm blocking my clicks from the db, these fields need to be manually populated for my visits.
-				$click_time = date('Y-m-d h:i:s', time());
-				$ip_address = $my_ip;
-			}
-			$ip_address = trim($ip_address);
-
-			list($click_date, $click_time) = explode(' ', $click_time);
-		//    $time_in_12_hour_format = date('g:i A', (strtotime($click_time) + YOURLS_HOURS_OFFSET * 3600) );
-
-			$date_now = date('Y-m-d');  // These are needed because not every click is saved to the db.  Why?
-			$time_now = date('g:i a');  // 12 hour time format.
-
-			$date_created = explode(' ', $timestamp);
-			$date_created = $date_created[0];
-
-		// CREATE EMAIL
-			$email_from    = ADMIN_EMAIL;
-			$email_subject = EMAIL_SUBJECT;
-			if (preg_match('/^aff/', $code)) {
-				$email_subject = FilterCChars("Re: Yourls - Affiliate Link clicked for Customer # $code");
-			}
-			else {
-				$email_subject = FilterCChars("Re: Yourls - Short Link clicked for Quote # $code");
-			}
-
-
-			// As of PHP 7.2, $headers can be an associative array.
-			$headers['MIME-Version'] = '1.0';
-			$headers['Content-type'] = 'text/html;charset=UTF-8';
-			$headers['From'] = $email_from;
-
-			$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-
-			$email_body = <<<"HTML"
-			<html>
-			<head>
-			<title> $email_subject </title>
-			</head>
-			<body>
-			<h2> Yourls Email Notify </h2>
-			$name viewed the "$title" link on $date_now @ $time_now.
-			<br>
-			<br>
-			IP Address: <a href="https://whatismyipaddress.com/ip/$remote_ip">$remote_ip</a>
-			<br>
-			Hostname: $hostname
-			<br>
-			<br>
-			This short URL has been clicked $clicks $click_text
-			<br>
-			and was created on $date_created.
-			<br>
-			<br>
-			YOURLS_REFERER =  $referer
-			<br>
-			YOURLS_LOG_IP = $ip_address
-			<br>
-			<br>
-			HTML;
-			$email_body .= PHP_EOL;
-
-			if ( preg_match('/^[0-9]{2}[a-m]{1}[0-9]{2}[a-z][0-9]{2}[a-z]$/i', $code) ) {
-				// Test for quote numbers.  See Note 1.
-				$email_body .= 'Open quote in FileMaker Pro: <br>'. PHP_EOL;
-				$email_body .= 'fmp://$/Quotes.fmp12?script=Go_To_Quote_from_YOURLS_Link&$_quote='.$code.'<br><br>'. PHP_EOL;
-			}
-
-			if ($qs_count > 0) {
-				$email_body .= 'Query items passed:<br>'. PHP_EOL;
-				$email_body .= '<pre>'. PHP_EOL . $elements.'</pre>'. PHP_EOL;
-				$email_body .= '(query items have been <b>urldecode</b>\'d.)<br><br><br>'. PHP_EOL;
-			}
-
-			$email_body .= 'The corresponding long URL is:<br>'.$long_url.'<br><br>'. PHP_EOL
-			. $test_message. PHP_EOL
-			. 'Last recorded click_time was '.$click_time. PHP_EOL
-			. '</body>'. PHP_EOL
-			. '</html>';
-
-			s22_print_to_log( ' ' );  // Print a blank line.
-
-			mail(EMAIL_TO, $email_subject, $email_body, $headers);
 		}
    }
 }
@@ -278,8 +294,8 @@ function s22_email_admin_page () {
 
 // Display admin page.
 function s22_email_admin_do_page () {
-   $admin_email = ADMIN_EMAIL;
-   $email_to    = EMAIL_TO;
+   $admin_email = S22_ADMIN_EMAIL;
+   $email_to    = S22_EMAIL_TO;
 
    // Check if a form was submitted.
    if (isset($_POST['submit'])) {
@@ -313,8 +329,8 @@ function s22_update_email_notify_addresses ($type, $email) {
 }
 
 function s22_print_to_log ($string_to_log) {
-   if (LOG_ERRORS === 'yes') {
-      error_log( date('Y-m-d h:i:s', time()) .' -- '. $string_to_log ."\n", 3, ERROR_LOG );
+   if (S22_LOG_ERRORS === 'yes') {
+      error_log( date('Y-m-d h:i:s', time()) .' -- '. $string_to_log ."\n", 3, S22_ERROR_LOG );
    }
 }
 
