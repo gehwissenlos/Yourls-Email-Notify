@@ -1,15 +1,13 @@
 <?php
 /*
 Plugin Name: Email Notifier
-Plugin URI: https://github.com/s22-tech/Yourls-email-notify/
-Description: Send admin an email when someone clicks on the short URL that was sent to them.
-Version: 1.5.7
-Original: 2016-12-15
-Date: 2021-02-25
-Author: s22_tech
+Plugin URI: https://github.com/gehwissenlos/Yourls-Email-Notify/
+Description: Send admin an email when someone adds a short URL
+Version: 1.0.0
+Original: 2022-12-10
+Date: 2022-12-10
+Author: gehwissenlos
 
-NOTES:
-$code is the Short URL name used when you create the link.
 */
 
 
@@ -21,34 +19,25 @@ $code is the Short URL name used when you create the link.
 // No direct call.
 if (!defined('YOURLS_ABSPATH')) die();
 
-define('S22_SERVER_IP', $_SERVER['SERVER_ADDR']);
+define('GEHWISSENLOS_SERVER_IP', $_SERVER['SERVER_ADDR']);
 
 // The correct date/time will be managed using the config time offset.  No longer needed with Yourls 1.8.
 date_default_timezone_set('US/Pacific');
 
 // Get these values from the `yourls_options` table.
-define('S22_EMAIL_FROM', yourls_get_option('email_from') );
-define('S22_EMAIL_TO',   yourls_get_option('email_to') );
-define('S22_MY_IP_FILE', yourls_get_option('my_ip_file') );
-define('S22_BOTS_FILE',  yourls_get_option('bots_file') );
-define('S22_ERROR_LOG',  yourls_get_option('error_log') );
-define('S22_LOG_ERRORS', yourls_get_option('log_errors') );
+define('gehwissenlos_EMAIL_FROM', yourls_get_option('email_from') );
+define('gehwissenlos_EMAIL_TO',   yourls_get_option('email_to') );
 
 // How to pass arguments
 // https://github.com/YOURLS/YOURLS/issues/1349
 // https://github.com/YOURLS/YOURLS/wiki/Plugins
 
-yourls_add_action('pre_redirect', 's22_email_notification');
-// This says: when YOURLS does action 'pre_redirect', call the function 's22_email_notification'.
-// 'pre_redirect' happens *before* the redirect but *after* the click's been logged in the db.
+yourls_add_action('add_new_link', 'gehwissenlos_email_notification');
 
-
-function s22_email_notification($args) {
-	s22_print_to_log(PHP_EOL);  // Start each section in the log with a blank line.
-   $long_url = isset( $args[0] ) ? $args[0] : null;
-   // $args[0] is the URL that I'm passing.  Example:
-   // http://www.domain.com/store.cgi?c=info.htm&itemid=21246CP7&i_21246CP7=3&name=Joe_Blow&code=9260A
-
+function gehwissenlos_email_notification($data) {
+	
+	
+	/** edit down here
    $keywords = yourls_get_longurl_keywords($long_url);  // Produces a list of keywords (shorturls) that point to this long url.
    $code = $keywords[0] ?? 'mmm';  // This is the keyword from the shorturl.
    s22_print_to_log('my_ip_file: '. S22_MY_IP_FILE);
