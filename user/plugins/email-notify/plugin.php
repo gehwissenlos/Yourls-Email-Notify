@@ -21,21 +21,103 @@ if (!defined('YOURLS_ABSPATH')) die();
 
 define('GEHWISSENLOS_SERVER_IP', $_SERVER['SERVER_ADDR']);
 
-// The correct date/time will be managed using the config time offset.  No longer needed with Yourls 1.8.
-date_default_timezone_set('US/Pacific');
-
 // Get these values from the `yourls_options` table.
-define('gehwissenlos_EMAIL_FROM', yourls_get_option('email_from') );
-define('gehwissenlos_EMAIL_TO',   yourls_get_option('email_to') );
+define('GEHWISSENLOS_EMAIL_FROM', yourls_get_option('email_from') );
+define('GEHWISSENLOS_EMAIL_TO',   yourls_get_option('email_to') );
 
 // How to pass arguments
 // https://github.com/YOURLS/YOURLS/issues/1349
 // https://github.com/YOURLS/YOURLS/wiki/Plugins
 
-yourls_add_action('add_new_link', 'gehwissenlos_email_notification');
+yourls_add_action('post_add_new_link', 'gehwissenlos_email_notification');
 
-function gehwissenlos_email_notification($data) {
+function gehwissenlos_email_notification($args) {
 	
+	// get the info we want to send to Slack
+	//$techInfo = $args[3];
+	$url = $args[0];
+	$keyword = $args[1];
+	$shortURL = YOURLS_SITE . "/" . $keyword;
+	$shortSite = substr(YOURLS_SITE, strpos(YOURLS_SITE, "://") + 3);
+	$title = empty($args[2]) ? $shortURL : $args[2];
+	
+	$email_subject = 'New shortened url from ' . YOURLS_SITE;
+	// As of PHP 7.2, $headers can be an associative array.
+	$headers['MIME-Version'] = '1.0';
+	$headers['Content-type'] = 'text/html;charset=UTF-8';
+	$headers['From'] = $email_from;
+	
+	$email_body = 'The url ' . $url . ' was shortened to ' . $shortURL;
+	
+	mail(GEHWISSENLOS_EMAIL_TO, $email_subject, $email_body, $headers);
+	
+}
+
+// Register our plugin admin page.
+yourls_add_action( 'plugins_loaded', 'gehwissenlos_email_admin_page' );
+
+function gehwissenlos_email_admin_page () {
+   yourls_register_plugin_page( 'email_notify', 'Click Notification Email', 'gehwissenlos_email_admin_do_page' );
+   // Parameters: page slug, page title, and function that will display the page itself.
+}
+
+// Display admin page.
+function gehwissenlos_email_admin_do_page () {
+   $email_from = GEHWISSENLOS_EMAIL_FROM;
+   $email_to   = GEHWISSENLOS_EMAIL_TO;
+
+   // Check if a form was submitted.
+   if (isset($_POST['submit'])) {
+      gehwissenlos_update_email_notify_addresses('email_from', $_POST['email_from']);
+      gehwissenlos_update_email_notify_addresses('email_to',   $_POST['email_to']);
+      yourls_redirect_javascript(yourls_site_url() .  $_SERVER['REQUEST_URI']);
+   }
+   echo <<<"HTML"
+   <style>
+   .container {
+	  width: 400px;
+	  clear: both;
+	}
+
+	.container input {
+	  width: 100%;
+	  clear: both;
+	}
+	form label {font-weight:bold}
+	</style>
+   <h2>Click Notification E-mail Addresses</h2>
+   <p>Enter the email addresses for sending and receiving the &quot;click notifications&quot; when someone clicks on a short URL.</p>
+   <form method="post">
+   <div class="container">
+      <p><label for="email_to">To Email Address:</label> <input type="text" size="50" id="email_to" name="email_to" value="$email_to" /></p>
+      <p><label for="email_from">From Email Address:</label> <input type="text" size="50" id="email_from" name="email_from" value="$email_from" /></p>
+   </div>
+      <p><input type="submit" name="submit" value="Add / Change" /></p>
+   </form>
+HTML;
+}
+
+// Update option in database.
+function gehwissenlos_update_email_notify_addresses ($type, $email) {
+   if (gehwissenlos_str_contains($email, '@') && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+      // Validate test_option. ALWAYS validate and sanitize user input.
+      echo 'Email is not valid';
+   }
+   else {
+      // Update value in database.
+      yourls_update_option($type, $email);
+   }
+}
+
+function gehwissenlos_str_contains ($string, $word, $case='') {
+	if ($case === 'i') {
+		// Case insensitive.
+		if (stripos($string, $word) !== false) return true;
+	}
+	else {
+		if (strpos($string, $word) !== false) return true;
+	}
+}
 	
 	/** edit down here
    $keywords = yourls_get_longurl_keywords($long_url);  // Produces a list of keywords (shorturls) that point to this long url.
@@ -271,27 +353,19 @@ function FilterCChars ($the_string) {
 yourls_add_action( 'plugins_loaded', 's22_email_admin_page' );
 
 function s22_email_admin_page () {
-   yourls_register_plugin_page( 'email_notify', 'Click Notification Email', 's22_email_admin_do_page' );
+   yourls_register_plugin_page( 'email_notify', 'Click Notification Email', 'gehwissenlos_email_admin_do_page' );
    // Parameters: page slug, page title, and function that will display the page itself.
 }
 
 // Display admin page.
-function s22_email_admin_do_page () {
-   $email_from = S22_EMAIL_FROM;
-   $email_to   = S22_EMAIL_TO;
-   $my_ip_file = S22_MY_IP_FILE;
-   $bots_file  = S22_BOTS_FILE;
-   $error_log  = S22_ERROR_LOG;
-   $log_errors = S22_LOG_ERRORS;
+function gehwissenlos_email_admin_do_page () {
+   $email_from = gehwissenlos_EMAIL_FROM;
+   $email_to   = gehwissenlos_EMAIL_TO;
 
    // Check if a form was submitted.
    if (isset($_POST['submit'])) {
-      s22_update_email_notify_addresses('email_from', $_POST['email_from']);
-      s22_update_email_notify_addresses('email_to',   $_POST['email_to']);
-      s22_update_email_notify_addresses('my_ip_file', $_POST['my_ip_file']);
-      s22_update_email_notify_addresses('bots_file',  $_POST['bots_file']);
-      s22_update_email_notify_addresses('error_log',  $_POST['error_log']);
-      s22_update_email_notify_addresses('log_errors', $_POST['log_errors']);
+      gehwissenlos_update_email_notify_addresses('email_from', $_POST['email_from']);
+      gehwissenlos_update_email_notify_addresses('email_to',   $_POST['email_to']);
       yourls_redirect_javascript(yourls_site_url() .  $_SERVER['REQUEST_URI']);
    }
 
