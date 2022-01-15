@@ -55,7 +55,7 @@ function gehwissenlos_email_notification($args) {
 yourls_add_action( 'plugins_loaded', 'gehwissenlos_email_admin_page' );
 
 function gehwissenlos_email_admin_page () {
-   yourls_register_plugin_page( 'email_notify', 'Click Notification Email', 'gehwissenlos_email_admin_do_page' );
+   yourls_register_plugin_page( 'email_notify', 'Notification Email', 'gehwissenlos_email_admin_do_page' );
    // Parameters: page slug, page title, and function that will display the page itself.
 }
 
