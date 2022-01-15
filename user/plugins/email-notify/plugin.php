@@ -4,8 +4,6 @@ Plugin Name: Email Notifier
 Plugin URI: https://github.com/gehwissenlos/Yourls-Email-Notify/
 Description: Send admin an email when someone adds a short URL
 Version: 1.0.0
-Original: 2022-12-10
-Date: 2022-12-10
 Author: gehwissenlos
 
 */
